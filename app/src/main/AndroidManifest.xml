@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <!--
+      Android 11+ (API 30) restricts which other apps you can SEE / launch.
+      We must declare the Aadhaar App packages and the deep-link intents we
+      intend to resolve, otherwise resolveActivity() returns null even when
+      the target app is installed.
+    -->
+    <queries>
+        <package android:name="in.gov.uidai.aadhaar" />
+        <package android:name="in.gov.uidai.mAadhaarPlus" />
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="https" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="aadhaar" />
+        </intent>
+    </queries>
+
+    <application
+        android:allowBackup="true"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.FinvuDemo">
+
+        <!-- Hosts the embedded WebView (the "FIU parent app"). -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:launchMode="singleTask">
+
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+            <!--
+              Return deep link. The Aadhaar App (or the simulator) hands control
+              back to us via finvu://callback?status=...&vc=...
+              In production this is typically an https App Link verified with
+              assetlinks.json; a custom scheme is used here to keep the demo self-contained.
+            -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="finvu" android:host="callback" />
+            </intent-filter>
+        </activity>
+
+        <!-- Stand-in for UIDAI's Aadhaar App so the flow completes without it installed. -->
+        <activity
+            android:name=".MockAadhaarActivity"
+            android:exported="false"
+            android:label="Aadhaar App (Simulated)" />
+    </application>
+</manifest>
